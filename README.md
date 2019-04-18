@@ -1,2 +1,3 @@
-# GetGoGraph
-Get Dependencies Graph in Go
+# DebGoGraph
+
+Get Dependencies Graph in Go for Debian packaging.
