@@ -2,13 +2,14 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/willf/pad"
 )
 
 // DepMaps is the recursive map for multi layer dependencies
@@ -19,9 +20,15 @@ type DepMaps struct {
 // LevelMap is a single level dependencies map
 type LevelMap map[string]bool
 
+// Global stdMap
+var stdMap LevelMap
+var finalMap DepMaps
+var levelSlice [][]string
+
 // Err is to log the error
-func Err(msg error) {
-	if msg != nil {
+func Err(err error, msg string) {
+	if err != nil {
+		fmt.Println(msg)
 		log.Fatal(msg)
 		os.Exit(1)
 	}
@@ -30,7 +37,7 @@ func Err(msg error) {
 // GetGoPath is to get $GOPATH environment variable
 func GetGoPath() string {
 	if os.Getenv("GOPATH") == "" {
-		Err(errors.New("GOPATH Not set"))
+		Err(nil, "GOPATH Not set")
 	}
 	return os.Getenv("GOPATH")
 }
@@ -52,7 +59,8 @@ func FileExist(path string) bool {
 // GetURLStatus is to get the status of a package
 func GetURLStatus(project string) bool {
 	res, err := http.Get("http://" + project)
-	Err(err)
+	fmt.Println(project)
+	Err(err, "GetURLStatus Error")
 	if res.StatusCode >= 200 && res.StatusCode <= 299 {
 		return true
 	}
@@ -63,10 +71,11 @@ func GetURLStatus(project string) bool {
 func HandleProject(project string) {
 	if !FileExist(GetProjectPath(project)) {
 		if GetURLStatus(project) {
+			log.Printf("Starting: go get %s", project)
 			cmd := exec.Command("go", "get", project)
-			out, err := cmd.CombinedOutput()
-			Err(err)
-			log.Printf("%s", out)
+			_, err := cmd.CombinedOutput()
+			Err(err, "Go get error")
+			log.Printf("Done: go get %s", project)
 		}
 	}
 }
@@ -75,7 +84,7 @@ func HandleProject(project string) {
 func GetStd() []string {
 	cmd := exec.Command("go", "list", "std")
 	out, err := cmd.CombinedOutput()
-	Err(err)
+	Err(err, "Go List STD error")
 	libs := strings.Replace(string(out), "'", "", -1)
 	slice := strings.Split(libs, "\n")
 	return slice
@@ -83,9 +92,9 @@ func GetStd() []string {
 
 // GetImports is to get first level dependencies of a project
 func GetImports(project string) []string {
-	cmd := exec.Command("go", "list", "-f", "'{{ join .Deps `\n` }}'", project)
+	cmd := exec.Command("go", "list", "-f", "'{{ join .Imports `\n` }}'", project)
 	out, err := cmd.CombinedOutput()
-	Err(err)
+	Err(err, "go list error")
 	libs := strings.Replace(string(out), "'", "", -1)
 	slice := strings.Split(libs, "\n")
 	return slice
@@ -104,8 +113,8 @@ func SliceToDepMap(slice []string) DepMaps {
 	return m
 }
 
-// SliceToMap is to convert a slice into a map
-func SliceToMap(slice []string) LevelMap {
+// SliceToLevelMap is to convert a slice into a map
+func SliceToLevelMap(slice []string) LevelMap {
 	m := make(LevelMap)
 	for i := 0; i < len(slice); i++ {
 		m[slice[i]] = false
@@ -125,8 +134,8 @@ func RemoveMap(mainMap, needleMap LevelMap) LevelMap {
 	return mainMap
 }
 
-// MapToSlice is to convert a LevelMap into slice
-func MapToSlice(m LevelMap) []string {
+// LevelMapToSlice is to convert a LevelMap into slice
+func LevelMapToSlice(m LevelMap) []string {
 	keys := []string{}
 	for key := range m {
 		keys = append(keys, key)
@@ -134,22 +143,78 @@ func MapToSlice(m LevelMap) []string {
 	return keys
 }
 
-func main() {
-	log.Print("DebGoGraph Starting...")
-	// Get the project
-	var project = "github.com/ramantehlan/mateix"
-
+// GetDep is
+func GetDep(level []string) {
+	project := level[len(level)-1]
 	// Handle path, if it don't exist, get it.
 	HandleProject(project)
-	// We convert slice to map, since it's fast in searching.
-	importMap := SliceToMap(GetImports(project))
-	//stdMap := SliceToMap(GetStd())
+	// Convert slice to map, since it's fast in searching.
+	importMap := SliceToLevelMap(GetImports(project))
+	// Remove standard libs from users libs
+	importMap = RemoveMap(importMap, stdMap)
+	// Convert importMap to slice again
+	importSlice := LevelMapToSlice(importMap)
+	// Convert slice to DepMaps now
+	importDepMaps := SliceToDepMap(importSlice)
 
-	fmt.Println(importMap)
+	for key := range importDepMaps.graph {
+		level = append(level, key)
+		levelSlice = append(levelSlice, level)
+		GetDep(level)
+	}
+}
 
-	// loop
-	// Get deps of this project
-	// check if they are present in the debian
-	// if not present add them to list // seperate list if present
-	// repeat the loop unless goal reached
+// InsertDep is to insert dependencies in a recursive map
+func InsertDep(slice []string) DepMaps {
+	var m DepMaps
+	m.graph = make(map[string]DepMaps)
+	if len(slice) > 0 {
+		m.graph[slice[0]] = InsertDep(slice[1:])
+	}
+	return m
+}
+
+// PrintDepMaps is to print the DepMaps
+func PrintDepMaps(m DepMaps, i int) {
+	for key, value := range m.graph {
+		fmt.Println(pad.Left("- "+key, len(key) + (i+1)*2, " "))
+		PrintDepMaps(value, i+1)
+	}
+	i++
+}
+
+// Maybe we should go get the main project first
+// like mannually do the go get github.com/zyedidia/micro
+// and the use the inner folder where the list will work
+
+func main() {
+	fmt.Println("DebGoGraph Starting...")
+	// Final map of all the dependencies
+	finalMap.graph = make(map[string]DepMaps)
+	// Level is used for sub dependencies
+	level := []string{"github.com/ramantehlan/mateix"}
+	// Get standard libraries in map
+	stdMap = SliceToLevelMap(GetStd())
+
+	/*
+	s := []string{"a","b","c","d"}
+	m := InsertDep(s)
+	var md DepMaps
+	md.graph = make(map[string]DepMaps)
+	m.graph["a"].graph["b"].graph["c"].graph["d"].graph["e"] = md
+	m.graph["a"].graph["b"].graph["c"].graph["d"].graph["f"] = md
+	m.graph["a"].graph["b"].graph["c"].graph["d"].graph["g"] = md
+	m.graph["a"].graph["h"] = md
+	m.graph["a"].graph["h"].graph["j"] = md
+	fmt.Println(m)
+
+	fmt.Println(m)
+	PrintDepMaps(m,0)*/
+
+
+	fmt.Println("calculating...")
+	GetDep(level)
+	fmt.Println("[Output]")
+	finalMap = InsertDep(levelSlice[3])
+	PrintDepMaps(finalMap,0)
 }
