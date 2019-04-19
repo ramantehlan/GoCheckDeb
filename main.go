@@ -22,8 +22,6 @@ type LevelMap map[string]bool
 
 // Global stdMap
 var stdMap LevelMap
-var finalMap DepMaps
-var levelSlice [][]string
 
 // Err is to log the error
 func Err(err error, msg string) {
@@ -144,8 +142,7 @@ func LevelMapToSlice(m LevelMap) []string {
 }
 
 // GetDep is
-func GetDep(level []string) {
-	project := level[len(level)-1]
+func GetDep(project string, fm *DepMaps) DepMaps {
 	// Handle path, if it don't exist, get it.
 	HandleProject(project)
 	// Convert slice to map, since it's fast in searching.
@@ -158,20 +155,10 @@ func GetDep(level []string) {
 	importDepMaps := SliceToDepMap(importSlice)
 
 	for key := range importDepMaps.graph {
-		level = append(level, key)
-		levelSlice = append(levelSlice, level)
-		GetDep(level)
+		f := fm.graph[key]
+		*fm = GetDep(key, &f)
 	}
-}
-
-// InsertDep is to insert dependencies in a recursive map
-func InsertDep(slice []string) DepMaps {
-	var m DepMaps
-	m.graph = make(map[string]DepMaps)
-	if len(slice) > 0 {
-		m.graph[slice[0]] = InsertDep(slice[1:])
-	}
-	return m
+	return importDepMaps
 }
 
 // PrintDepMaps is to print the DepMaps
@@ -183,11 +170,6 @@ func PrintDepMaps(m DepMaps, i int) {
 	i++
 }
 
-// MergeDepMaps is to merge two DepMaps 
-func MergeDepMaps(m1, m2 DepMaps) DepMaps {
-	return m1 
-}
-
 
 // Maybe we should go get the main project first
 // like mannually do the go get github.com/zyedidia/micro
@@ -195,18 +177,20 @@ func MergeDepMaps(m1, m2 DepMaps) DepMaps {
 
 func main() {
 	fmt.Println("DebGoGraph Starting...")
+	var finalMap DepMaps
 	// Final map of all the dependencies
 	finalMap.graph = make(map[string]DepMaps)
 	// Level is used for sub dependencies
-	level := []string{"github.com/ramantehlan/mateix"}
+	project := "github.com/ramantehlan/mateix"
 	// Get standard libraries in map
 	stdMap = SliceToLevelMap(GetStd())
 
 
 	fmt.Println("calculating...")
-	GetDep(level)
+	m := GetDep(project, &finalMap)
+
 	fmt.Println("[Output]")
-	finalMap = InsertDep(levelSlice[4])
-	fmt.Println(levelSlice)
+	fmt.Println("M: ", m)
+	fmt.Println("Final Map:" , finalMap)
 	PrintDepMaps(finalMap,0)
 }
