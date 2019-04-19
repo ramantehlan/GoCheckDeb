@@ -12,16 +12,17 @@ import (
 	"github.com/willf/pad"
 )
 
-// DepMaps is the recursive map for multi layer dependencies
-type DepMaps struct {
-	graph map[string]DepMaps
+type DepMap struct {
+	deps map[string]DepMap
 }
 
 // LevelMap is a single level dependencies map
 type LevelMap map[string]bool
 
+
 // Global stdMap
 var stdMap LevelMap
+var finalMap DepMap
 
 // Err is to log the error
 func Err(err error, msg string) {
@@ -89,8 +90,13 @@ func GetStd() []string {
 }
 
 // GetImports is to get first level dependencies of a project
-func GetImports(project string) []string {
+func GetImports(project, importType string) []string {
 	cmd := exec.Command("go", "list", "-f", "'{{ join .Imports `\n` }}'", project)
+	switch importType {
+	case "deps":
+		cmd = exec.Command("go", "list", "-f", "'{{ join .Deps `\n` }}'", project)
+	}
+
 	out, err := cmd.CombinedOutput()
 	Err(err, "go list error")
 	libs := strings.Replace(string(out), "'", "", -1)
@@ -98,24 +104,11 @@ func GetImports(project string) []string {
 	return slice
 }
 
-// SliceToDepMap is to convert a slice into a DepMap
-func SliceToDepMap(slice []string) DepMaps {
-	var m DepMaps
-	m.graph = make(map[string]DepMaps)
-	for i := 0; i < len(slice); i++ {
-		var dummy DepMaps
-		m.graph[slice[i]] = dummy
-	}
-	// Delete the empty elements
-	delete(m.graph, "")
-	return m
-}
-
 // SliceToLevelMap is to convert a slice into a map
-func SliceToLevelMap(slice []string) LevelMap {
+func SliceToMap(slice []string) LevelMap {
 	m := make(LevelMap)
 	for i := 0; i < len(slice); i++ {
-		m[slice[i]] = false
+		m[slice[i]] = true
 	}
 	// Delete the empty elements
 	delete(m, "")
@@ -133,7 +126,7 @@ func RemoveMap(mainMap, needleMap LevelMap) LevelMap {
 }
 
 // LevelMapToSlice is to convert a LevelMap into slice
-func LevelMapToSlice(m LevelMap) []string {
+func MapToSlice(m LevelMap) []string {
 	keys := []string{}
 	for key := range m {
 		keys = append(keys, key)
@@ -141,35 +134,70 @@ func LevelMapToSlice(m LevelMap) []string {
 	return keys
 }
 
-// GetDep is
-func GetDep(project string, fm *DepMaps) DepMaps {
-	// Handle path, if it don't exist, get it.
-	HandleProject(project)
-	// Convert slice to map, since it's fast in searching.
-	importMap := SliceToLevelMap(GetImports(project))
-	// Remove standard libs from users libs
-	importMap = RemoveMap(importMap, stdMap)
-	// Convert importMap to slice again
-	importSlice := LevelMapToSlice(importMap)
-	// Convert slice to DepMaps now
-	importDepMaps := SliceToDepMap(importSlice)
-
-	for key := range importDepMaps.graph {
-		f := fm.graph[key]
-		*fm = GetDep(key, &f)
-	}
-	return importDepMaps
-}
-
-// PrintDepMaps is to print the DepMaps
-func PrintDepMaps(m DepMaps, i int) {
-	for key, value := range m.graph {
-		fmt.Println(pad.Left("- "+key, len(key) + (i+1)*2, " "))
-		PrintDepMaps(value, i+1)
+// PrintDepMap is to print the DepMap
+func PrintDepMap(m DepMap, i int) {
+	for key, value := range m.deps {
+		fmt.Println(pad.Left("- "+key, len(key)+(i+1)*2, " "))
+		PrintDepMap(value, i+1)
 	}
 	i++
 }
 
+// SliceToDepMap is to convert a slice into a DepMap
+func SliceToDepMap(slice []string) DepMap {
+	var m DepMap
+	m.deps = make(map[string]DepMap)
+	for i := 0; i < len(slice); i++ {
+		var dummy DepMap
+		m.deps[slice[i]] = dummy
+	}
+	// Delete the empty elements
+	delete(m.deps, "")
+	return m
+}
+
+// GetDep is
+func GetDepTree(project string) DepMap {
+	// Handle path, if it don't exist, get it.
+	HandleProject(project)
+	// Convert slice to map, since it's fast in searching.
+	importMap := SliceToMap(GetImports(project, "imports"))
+	// Remove standard libs from users libs
+	importMap = RemoveMap(importMap, stdMap)
+	// Convert importMap to slice again
+	importSlice := MapToSlice(importMap)
+	// Convert slice to DepMap now
+	importDepMap := SliceToDepMap(importSlice)
+
+	for key := range importDepMap.deps {
+		importDepMap.deps[key] = GetDepTree(key)
+	}
+
+	return importDepMap
+}
+
+// GetDep is
+func GetDepGraph(project string) DepMap {
+	// Handle path, if it don't exist, get it.
+	HandleProject(project)
+	// Convert slice to map, since it's fast in searching.
+	importMap := SliceToMap(GetImports(project, "deps"))
+	// Remove standard libs from users libs
+	importMap = RemoveMap(importMap, stdMap)
+	// Convert importMap to slice again
+	importSlice := MapToSlice(importMap)
+	// Convert slice to DepMap now
+	importDepMap := SliceToDepMap(importSlice)
+
+	var m DepMap
+	m.deps = make(map[string]DepMap)
+	for key := range importDepMap.deps {
+		importDepMap.deps[key] = m
+		GetDepGraph(key)
+	}
+
+	return importDepMap
+}
 
 // Maybe we should go get the main project first
 // like mannually do the go get github.com/zyedidia/micro
@@ -177,20 +205,14 @@ func PrintDepMaps(m DepMaps, i int) {
 
 func main() {
 	fmt.Println("DebGoGraph Starting...")
-	var finalMap DepMaps
-	// Final map of all the dependencies
-	finalMap.graph = make(map[string]DepMaps)
 	// Level is used for sub dependencies
 	project := "github.com/ramantehlan/mateix"
 	// Get standard libraries in map
-	stdMap = SliceToLevelMap(GetStd())
-
+	stdMap = SliceToMap(GetStd())
+	finalMap.deps = make(map[string]DepMap)
 
 	fmt.Println("calculating...")
-	m := GetDep(project, &finalMap)
 
-	fmt.Println("[Output]")
-	fmt.Println("M: ", m)
-	fmt.Println("Final Map:" , finalMap)
-	PrintDepMaps(finalMap,0)
+	m := GetDepGraph(project)
+	PrintDepMap(m, 0)
 }
