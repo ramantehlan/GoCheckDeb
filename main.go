@@ -183,6 +183,12 @@ func PrintDepMaps(m DepMaps, i int) {
 	i++
 }
 
+// MergeDepMaps is to merge two DepMaps 
+func MergeDepMaps(m1, m2 DepMaps) DepMaps {
+	return m1 
+}
+
+
 // Maybe we should go get the main project first
 // like mannually do the go get github.com/zyedidia/micro
 // and the use the inner folder where the list will work
@@ -196,25 +202,11 @@ func main() {
 	// Get standard libraries in map
 	stdMap = SliceToLevelMap(GetStd())
 
-	/*
-	s := []string{"a","b","c","d"}
-	m := InsertDep(s)
-	var md DepMaps
-	md.graph = make(map[string]DepMaps)
-	m.graph["a"].graph["b"].graph["c"].graph["d"].graph["e"] = md
-	m.graph["a"].graph["b"].graph["c"].graph["d"].graph["f"] = md
-	m.graph["a"].graph["b"].graph["c"].graph["d"].graph["g"] = md
-	m.graph["a"].graph["h"] = md
-	m.graph["a"].graph["h"].graph["j"] = md
-	fmt.Println(m)
-
-	fmt.Println(m)
-	PrintDepMaps(m,0)*/
-
 
 	fmt.Println("calculating...")
 	GetDep(level)
 	fmt.Println("[Output]")
-	finalMap = InsertDep(levelSlice[3])
+	finalMap = InsertDep(levelSlice[4])
+	fmt.Println(levelSlice)
 	PrintDepMaps(finalMap,0)
 }
