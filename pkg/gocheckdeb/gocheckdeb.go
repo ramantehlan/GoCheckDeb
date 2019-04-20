@@ -181,6 +181,17 @@ func SliceToDepMap(slice []string) DepMap {
 	return m
 }
 
+// SetStd is to set the standard functions
+func SetStd() error {
+	stdSlice, err := GetImports("", "std")
+	if err != nil {
+		return err
+	}
+	StdMap = SliceToMap(stdSlice)
+
+	return nil
+}
+
 // GetDepTree is to get the recursive tree of dependencies
 func GetDepTree(project string) (DepMap, error) {
 	// Handle path, if it don't exist, get it.
@@ -208,7 +219,7 @@ func GetDepTree(project string) (DepMap, error) {
 
 // GetGoDebBinaries is to get the complete list of all the binaries packaged in debian
 func GetGoDebBinaries() (map[string]string, error) {
-	golangBinaries := make(map[string]string)
+	goBinaries := make(map[string]string)
 	resp, err := http.Get(GoDebBinariesURL)
 	var pkgs []GoDebBinaryStruct
 
@@ -230,9 +241,9 @@ func GetGoDebBinaries() (map[string]string, error) {
 		}
 		for _, importPath := range strings.Split(pkg.XSGoImportPath, ",") {
 			// XS-Go-Import-Path can be comma-separated and contain spaces.
-			golangBinaries[strings.TrimSpace(importPath)] = pkg.Binary
+			goBinaries[strings.TrimSpace(importPath)] = pkg.Binary
 		}
 	}
 
-	return golangBinaries, nil
+	return goBinaries, nil
 }

@@ -13,6 +13,7 @@ func main() {
 
 	fmt.Println("calculating...")
 
+	gocheckdeb.SetStd()
 	m, _ := gocheckdeb.GetDepTree(project)
 	gocheckdeb.PrintDepMap(m, 0)
 }
