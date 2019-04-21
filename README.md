@@ -6,6 +6,8 @@ Tool and package to get Dependencies in Go for Debian packaging. :cyclone: :page
 
 - [About](#about)
 - [Usage](#usage)
+	- [Tool](#tool)
+	- [Package](#package)
 - [Development](#development)
 	- [Pre-Requisites](#pre-requisites)
 	- [Development Environment](#development-environment)
