@@ -35,15 +35,15 @@ You can either use it as a tool or as a package for your own project. Instructio
 
 #### Tool
 
-**1.** Download the Binary from [here]. https://github.com/ramantehlan/GoCheckDeb/raw/master/GoCheckDeb
-**2.** Make the Binary executable. `$ chmod +x ./GoCheckDeb`
+1. Download the Binary from [here]. https://github.com/ramantehlan/GoCheckDeb/raw/master/GoCheckDeb
+2. Make the Binary executable. `$ chmod +x ./GoCheckDeb`
 
 Once you have downloaded the tool, you can use following commands to use it.
 
 #### Package
 
-**1.** Download the package. `$ go get github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
-**2.** Import it into you go program. `import github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
+1. Download the package. `$ go get github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
+2. Import it into you go program. `import github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
 
 Once you have imported the package, you can use following document to use it.  
 
@@ -53,9 +53,9 @@ Once you have imported the package, you can use following document to use it.
 
 To work on this project, you need to have the following pre-requisites.
 
-**1.** Little experience of Linux and Terminal.
-**2.** Familiarity with Golang and Golang packages.
-**3.** Familiarity with Debian packaging.
+1. Little experience of Linux and Terminal.
+2. Familiarity with Golang and Golang packages.
+3. Familiarity with Debian packaging.
 
 Also, you need to have Go Environment setup in your system.
 
@@ -63,9 +63,9 @@ Also, you need to have Go Environment setup in your system.
 
 To contribute to this project, or build it for other platforms use the following steps.
 
-**1.** Clone this project in your $GOPATH. `$ git clone https://github.com/ramantehlan/GoCheckDeb`
-**2.** Get all the dependencies. `$ go get ./...`
-**3.** Build the project. `$ go build`
+1. Clone this project in your $GOPATH. `$ git clone https://github.com/ramantehlan/GoCheckDeb`
+2. Get all the dependencies. `$ go get ./...`
+3. Build the project. `$ go build`
 
 #### File Structure
 
