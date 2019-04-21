@@ -10,8 +10,8 @@ func main() {
 	fmt.Println("DebGoGraph Starting...")
 	// Level is used for sub dependencies
 	//project := "github.com/ramantehlan/mateix"
-	//project := "github.com/zyedidia/micro"
-	project := "github.com/zaquestion/lab"
+	project := "github.com/zyedidia/micro/cmd/micro"
+	//project := "github.com/zaquestion/lab"
 
 	fmt.Println("calculating...")
 

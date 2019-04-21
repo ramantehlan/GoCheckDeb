@@ -78,6 +78,12 @@ func FileExist(path string) bool {
 	return false
 }
 
+// DirectoryExist is to check if a directory exist
+func DirectoryExist(path string) bool {
+
+	return false
+}
+
 // GetURLStatus is to get the status of a package
 func GetURLStatus(project string) (bool, error) {
 	res, err := http.Get("http://" + project)
@@ -121,6 +127,8 @@ func GetImports(project, importType string) ([]string, error) {
 	switch importType {
 	case "deps":
 		cmd = exec.Command("go", "list", "-f", "'{{ join .Deps `\n` }}'", project)
+	case "test":
+		cmd = exec.Command("go", "list", "-f", "'{{ join .TestImports `\n` }}'", project)
 	case "std":
 		cmd = exec.Command("go", "list", "std")
 	}
