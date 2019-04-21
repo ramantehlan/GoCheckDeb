@@ -32,7 +32,12 @@ type LevelMap map[string]bool
 
 // StdMap is to store standard packages
 var StdMap LevelMap
+
+// GoBinaries is the map of already packaged binaries
 var GoBinaries LevelMap
+
+// DepGraph is the graph of packages.
+var DepGraph DepMap
 
 const (
 	// GoDebBinariesURL is the url of binary list of go lang
@@ -161,10 +166,10 @@ func MapToSlice(m LevelMap) []string {
 }
 
 // PrintDepMap is to print the DepMap
-func PrintDepMap(m DepMap, i int) {
+func PrintDepMap(m DepMap, debFilter bool, i int) {
 	for key, value := range m.deps {
 		fmt.Println(pad.Left("- "+key, len(key)+(i+1)*2, " "))
-		PrintDepMap(value, i+1)
+		PrintDepMap(value, debFilter, i+1)
 	}
 	i++
 }
@@ -182,20 +187,31 @@ func SliceToDepMap(slice []string) DepMap {
 	return m
 }
 
-// Init is to set the default values
-func Init() error {
+// GetDep is the on function to get graph or map of dependencies
+func GetDep(project string, returnType string) (DepMap, error) {
+
 	stdSlice, err := GetImports("", "std")
 	if err != nil {
-		return err
+		var m DepMap
+		return m, err
 	}
 	StdMap = SliceToMap(stdSlice)
 	GoBinaries, _ = GetGoDebBinaries()
+	DepGraph.deps = make(map[string]DepMap)
 
-	return nil
+	// By default it will give out map
+	m, err := GetDepRecursive(project, returnType)
+
+	switch returnType {
+	case "graph":
+		m = DepGraph
+	}
+
+	return m, err
 }
 
-// GetDepTree is to get the recursive tree of dependencies
-func GetDepTree(project string, debFilter bool) (DepMap, error) {
+// GetDepRecursive is to get the recursive map of dependencies
+func GetDepRecursive(project string, returnType string) (DepMap, error) {
 	// Handle path, if it don't exist, get it.
 	HandleProject(project)
 	// Convert slice to map, since it's fast in searching.
@@ -213,15 +229,14 @@ func GetDepTree(project string, debFilter bool) (DepMap, error) {
 	importDepMap := SliceToDepMap(importSlice)
 
 	for key := range importDepMap.deps {
-		if debFilter {
-			fmt.Println("debFilter-True: ", project)
-			_, ok := GoBinaries[project]
-			fmt.Println("ok: ", ok)
-			if ok {
-				GetDepTree(key, debFilter)
-			}
+		switch returnType {
+		case "map":
+			importDepMap.deps[key], _ = GetDepRecursive(key, returnType)
+		case "graph":
+			DepGraph.deps[key], _ = GetDepRecursive(key, returnType)
+		default:
+			importDepMap.deps[key], _ = GetDepRecursive(key, returnType)
 		}
-		importDepMap.deps[key], _ = GetDepTree(key, debFilter)
 	}
 
 	return importDepMap, nil
