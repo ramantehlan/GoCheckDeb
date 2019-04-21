@@ -45,7 +45,15 @@ Once you have downloaded the tool, you can use following commands to use it.
 1. Download the package. `$ go get github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
 2. Import it into you go program. `import github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
 
-Once you have imported the package, you can use following document to use it.  
+Once you have imported the package, you can use following document to use it.
+
+ ```go
+
+// Global Variables inclure
+GoDebBinaryStruct
+
+
+ ```
 
 ## Development
 
