@@ -9,13 +9,14 @@ import (
 func main() {
 	fmt.Println("DebGoGraph Starting...")
 	// Level is used for sub dependencies
-	project := "github.com/ramantehlan/mateix"
+	//project := "github.com/ramantehlan/mateix"
 	//project := "github.com/zyedidia/micro"
-	//project := "github.com/zaquestion/lab"
+	project := "github.com/zaquestion/lab"
 
 	fmt.Println("calculating...")
 
+	// List | Graph | Tree
 	m2, _ := gocheckdeb.GetDep(project, "graph")
 	fmt.Println("---Border---")
-	gocheckdeb.PrintDepMap(m2, true, 0)
+	gocheckdeb.PrintDep(m2, true, 0)
 }
