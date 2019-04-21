@@ -32,6 +32,7 @@ type LevelMap map[string]bool
 
 // StdMap is to store standard packages
 var StdMap LevelMap
+var GoBinaries LevelMap
 
 const (
 	// GoDebBinariesURL is the url of binary list of go lang
@@ -181,19 +182,20 @@ func SliceToDepMap(slice []string) DepMap {
 	return m
 }
 
-// SetStd is to set the standard functions
-func SetStd() error {
+// Init is to set the default values
+func Init() error {
 	stdSlice, err := GetImports("", "std")
 	if err != nil {
 		return err
 	}
 	StdMap = SliceToMap(stdSlice)
+	GoBinaries, _ = GetGoDebBinaries()
 
 	return nil
 }
 
 // GetDepTree is to get the recursive tree of dependencies
-func GetDepTree(project string) (DepMap, error) {
+func GetDepTree(project string, debFilter bool) (DepMap, error) {
 	// Handle path, if it don't exist, get it.
 	HandleProject(project)
 	// Convert slice to map, since it's fast in searching.
@@ -211,15 +213,23 @@ func GetDepTree(project string) (DepMap, error) {
 	importDepMap := SliceToDepMap(importSlice)
 
 	for key := range importDepMap.deps {
-		importDepMap.deps[key], _ = GetDepTree(key)
+		if debFilter {
+			fmt.Println("debFilter-True: ", project)
+			_, ok := GoBinaries[project]
+			fmt.Println("ok: ", ok)
+			if ok {
+				GetDepTree(key, debFilter)
+			}
+		}
+		importDepMap.deps[key], _ = GetDepTree(key, debFilter)
 	}
 
 	return importDepMap, nil
 }
 
 // GetGoDebBinaries is to get the complete list of all the binaries packaged in debian
-func GetGoDebBinaries() (map[string]string, error) {
-	goBinaries := make(map[string]string)
+func GetGoDebBinaries() (LevelMap, error) {
+	GoBin := make(map[string]bool)
 	resp, err := http.Get(GoDebBinariesURL)
 	var pkgs []GoDebBinaryStruct
 
@@ -241,9 +251,9 @@ func GetGoDebBinaries() (map[string]string, error) {
 		}
 		for _, importPath := range strings.Split(pkg.XSGoImportPath, ",") {
 			// XS-Go-Import-Path can be comma-separated and contain spaces.
-			goBinaries[strings.TrimSpace(importPath)] = pkg.Binary
+			GoBin[strings.TrimSpace(importPath)] = true
 		}
 	}
 
-	return goBinaries, nil
+	return GoBin, nil
 }
