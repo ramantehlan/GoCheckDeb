@@ -27,24 +27,23 @@ them is not yet packaged for Debian.
 GoCheckDeb is a tool to do the same, it will get all the Golang project
 dependencies and sub-dependencies and filter out the ones which are not packaged
 yet. You can also use this tool in your project, you just have to import the
-`gocheckdeb` library.
+**gocheckdeb** library.
 
 ## Usage
 
+You can either use it as a tool or as a package for your own project. Instructions to download and use it are given below.
+
 #### Tool
 
-you can download this tool from [here](https://github.com/ramantehlan/GoCheckDeb/raw/master/GoCheckDeb), once you have this tool, use the following commands to use it. 
+**1.** Download the Binary from [here]. https://github.com/ramantehlan/GoCheckDeb/raw/master/GoCheckDeb
+**2.** Make the Binary executable. `$ chmod +x ./GoCheckDeb`
+
+Once you have downloaded the tool, you can use following commands to use it.
 
 #### Package
 
-You can also use the `gocheckpackage` in your project. To import this project, follow the steps given below. 
-
-1. Download the package. `$ go get github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
-2. Import it into you go program.
-
-```go
-	import github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb
-```
+**1.** Download the package. `$ go get github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
+**2.** Import it into you go program. `import github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
 
 Once you have imported the package, you can use following document to use it.  
 
@@ -54,9 +53,9 @@ Once you have imported the package, you can use following document to use it.
 
 To work on this project, you need to have the following pre-requisites.
 
-1. Little experience of Linux and Terminal.
-2. Familiarity with Golang and Golang packages.
-3. Familiarity with Debian packaging.
+**1.** Little experience of Linux and Terminal.
+**2.** Familiarity with Golang and Golang packages.
+**3.** Familiarity with Debian packaging.
 
 Also, you need to have Go Environment setup in your system.
 
@@ -64,9 +63,9 @@ Also, you need to have Go Environment setup in your system.
 
 To contribute to this project, or build it for other platforms use the following steps.
 
-1. Clone this project in your $GOPATH. `$ git clone https://github.com/ramantehlan/GoCheckDeb`
-2. Get all the dependencies. `$ go get ./...`
-3. Build the project. `$ go build`
+**1.** Clone this project in your $GOPATH. `$ git clone https://github.com/ramantehlan/GoCheckDeb`
+**2.** Get all the dependencies. `$ go get ./...`
+**3.** Build the project. `$ go build`
 
 #### File Structure
 
