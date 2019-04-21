@@ -35,7 +35,7 @@ You can either use it as a tool or as a package for your own project. Instructio
 
 #### Tool
 
-1. Download the Binary from [here]. https://github.com/ramantehlan/GoCheckDeb/raw/master/GoCheckDeb
+1. Download the Binary from [here](https://github.com/ramantehlan/GoCheckDeb/raw/master/GoCheckDeb)
 2. Make the Binary executable. `$ chmod +x ./GoCheckDeb`
 
 Once you have downloaded the tool, you can use following commands to use it.
