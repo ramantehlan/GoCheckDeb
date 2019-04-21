@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/logrusorgru/aurora"
 	"github.com/willf/pad"
 )
 
@@ -28,7 +29,7 @@ type DepMap struct {
 }
 
 // LevelMap is a single level dependencies map
-type LevelMap map[string]bool
+type LevelMap map[string]string
 
 // StdMap is to store standard packages
 var StdMap LevelMap
@@ -139,7 +140,7 @@ func GetImports(project, importType string) ([]string, error) {
 func SliceToMap(slice []string) LevelMap {
 	m := make(LevelMap)
 	for i := 0; i < len(slice); i++ {
-		m[slice[i]] = true
+		m[slice[i]] = ""
 	}
 	// Delete the empty elements
 	delete(m, "")
@@ -165,11 +166,27 @@ func MapToSlice(m LevelMap) []string {
 	return keys
 }
 
-// PrintDepMap is to print the DepMap
-func PrintDepMap(m DepMap, debFilter bool, i int) {
+// PrintDep is to print the DepMap
+func PrintDep(m DepMap, debFilter bool, i int) {
 	for key, value := range m.deps {
-		fmt.Println(pad.Left("- "+key, len(key)+(i+1)*2, " "))
-		PrintDepMap(value, debFilter, i+1)
+		if debFilter {
+			if _, ok := GoBinaries[key]; ok {
+				fmt.Print(pad.Left("- ", (i+1)*2, " "))
+				fmt.Print(key + "\n")
+				PrintDep(value, debFilter, i+1)
+
+			} else {
+				fmt.Print(pad.Left("- ", (i+1)*2, " "))
+				fmt.Print(key)
+				fmt.Print(aurora.Bold(aurora.Yellow(" [No Deb Package] \n")))
+				PrintDep(value, debFilter, i+1)
+			}
+		} else {
+			fmt.Print(pad.Left("- ", (i+1)*2, " "))
+			fmt.Print(aurora.Bold(aurora.Blue(key + "\n")))
+			PrintDep(value, debFilter, i+1)
+		}
+
 	}
 	i++
 }
@@ -199,7 +216,7 @@ func GetDep(project string, returnType string) (DepMap, error) {
 	GoBinaries, _ = GetGoDebBinaries()
 	DepGraph.deps = make(map[string]DepMap)
 
-	// By default it will give out map
+	// By default it will give out map or list
 	m, err := GetDepRecursive(project, returnType)
 
 	switch returnType {
@@ -230,10 +247,12 @@ func GetDepRecursive(project string, returnType string) (DepMap, error) {
 
 	for key := range importDepMap.deps {
 		switch returnType {
-		case "map":
+		case "tree":
 			importDepMap.deps[key], _ = GetDepRecursive(key, returnType)
 		case "graph":
 			DepGraph.deps[key], _ = GetDepRecursive(key, returnType)
+		case "list":
+			return importDepMap, nil
 		default:
 			importDepMap.deps[key], _ = GetDepRecursive(key, returnType)
 		}
@@ -242,9 +261,15 @@ func GetDepRecursive(project string, returnType string) (DepMap, error) {
 	return importDepMap, nil
 }
 
+// SearchDebPackage is to search for a deb package
+func SearchDebPackage(name string) bool {
+	_, ok := GoBinaries[name]
+	return ok
+}
+
 // GetGoDebBinaries is to get the complete list of all the binaries packaged in debian
 func GetGoDebBinaries() (LevelMap, error) {
-	GoBin := make(map[string]bool)
+	GoBin := make(map[string]string)
 	resp, err := http.Get(GoDebBinariesURL)
 	var pkgs []GoDebBinaryStruct
 
@@ -266,7 +291,7 @@ func GetGoDebBinaries() (LevelMap, error) {
 		}
 		for _, importPath := range strings.Split(pkg.XSGoImportPath, ",") {
 			// XS-Go-Import-Path can be comma-separated and contain spaces.
-			GoBin[strings.TrimSpace(importPath)] = true
+			GoBin[strings.TrimSpace(importPath)] = pkg.Binary
 		}
 	}
 
