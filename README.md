@@ -7,6 +7,9 @@ Tool and package to get Dependencies in Go for Debian packaging. :cyclone: :page
 - [About](#about)
 - [Usage](#usage)
 - [Development](#development)
+	- [Pre-Requisites](#pre-requisites)
+	- [Development Environment](#development-environment)
+	- [File Structure](#file-structure)
 - [Contribution](#contribution)
 - [Resources](#resources)
 - [Gallery](#gallery)
@@ -25,20 +28,72 @@ yet. You can also use this tool in your project, you just have to import the
 `gocheckdeb` library.
 
 ## Usage
-  - Installation
-  - Commands
+
+#### Tool
+
+you can download this tool from [here](https://github.com/ramantehlan/GoCheckDeb/raw/master/GoCheckDeb), once you have this tool, use the following commands to use it. 
+
+#### Package
+
+You can also use the `gocheckpackage` in your project. To import this project, follow the steps given below. 
+
+1. Download the package. `$ go get github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
+2. Import it into you go program.
+
+```go
+	import github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb
+```
+
+Once you have imported the package, you can use following document to use it.  
 
 ## Development
-  - Pre-Requisites
-  - Development-Environment
-  - FileStructure
-  - Build
+
+#### Pre-Requisites
+
+To work on this project, you need to have the following pre-requisites.
+
+1. Little experience of Linux and Terminal.
+2. Familiarity with Golang and Golang packages.
+3. Familiarity with Debian packaging.
+
+Also, you need to have Go Environment setup in your system.
+
+#### Development Environment
+
+To contribute to this project, or build it for other platforms use the following steps.
+
+1. Clone this project in your $GOPATH. `$ git clone https://github.com/ramantehlan/GoCheckDeb`
+2. Get all the dependencies. `$ go get ./...`
+3. Build the project. `$ go build`
+
+#### File Structure
+
+```
+.
+├── GoCheckDeb
+├── LICENSE
+├── main.go
+├── README.md
+├── .gitignore
+└── pkg
+    └── gocheckdeb
+        └── gocheckdeb.go
+```
 
 ## Contribution
-  - Community
-  - Guideline
-  - Workflow
-  - Best-Practices
+
+Your contributions are always welcome and appreciated. Following are the things you can do to contribute to this project.
+
+1. **Report a bug** <br>
+If you think you have encountered a bug, and I should know about it, feel free to report it [here](https://github.com/ramantehlan/GoCheckDeb/issues/new) and I will take care of it.
+
+2. **Request a feature** <br>
+You can also request for a feature [here](https://github.com/ramantehlan/GoCheckDeb/issues/new), and if it will viable, it will be picked for development.  
+
+3. **Create a pull request** <br>
+It can't get better then this, your pull request will be really appreciated by the community. You can get started by picking up any open issues from [here](https://github.com/ramantehlan/GoCheckDeb/issues) and make a pull request.
+
+> If you are new to open-source, make sure to check read more about it [here](https://www.digitalocean.com/community/tutorial_series/an-introduction-to-open-source) and learn more about creating a pull request [here](https://www.digitalocean.com/community/tutorials/how-to-create-a-pull-request-on-github).
 
 ## Resources
 
