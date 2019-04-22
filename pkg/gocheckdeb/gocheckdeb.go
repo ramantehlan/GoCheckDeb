@@ -31,6 +31,12 @@ type DepMap struct {
 // LevelMap is a single level dependencies map
 type LevelMap map[string]string
 
+// ProjectName is to store the current project which is being checked
+var ProjectName string
+
+// VendorUsed is to flag if the vendor folder is used or not
+var VendorUsed bool
+
 // StdMap is to store standard packages
 var StdMap LevelMap
 
@@ -78,9 +84,14 @@ func FileExist(path string) bool {
 	return false
 }
 
-// DirectoryExist is to check if a directory exist
+// DirectoryExist is to check if a directory exist in GoPath
 func DirectoryExist(path string) bool {
-
+	fi, err := os.Stat(path)
+	if err == nil {
+		if fi.IsDir() {
+			return true
+		}
+	}
 	return false
 }
 
@@ -96,8 +107,8 @@ func GetURLStatus(project string) (bool, error) {
 	return false, errors.New("Can't get " + "http://" + project)
 }
 
-// HandleProject is to get project
-func HandleProject(project string) error {
+// GetPkg is to get project
+func GetPkg(project string) error {
 	projectPath, err := GetProjectPath(project)
 	if err != nil {
 		return err
@@ -118,6 +129,16 @@ func HandleProject(project string) error {
 		}
 	}
 
+	return nil
+}
+
+// GetAllPkg is to get projects at once
+func GetAllPkg(project string) error {
+	cmd := exec.Command("go", "get", "-d", "-t", project+"/...")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		return errors.New("Error in 'go get " + project + "/...'")
+	}
 	return nil
 }
 
@@ -178,7 +199,7 @@ func MapToSlice(m LevelMap) []string {
 func PrintDep(m DepMap, debFilter bool, i int) {
 	for key, value := range m.deps {
 		if debFilter {
-			if _, ok := GoBinaries[key]; ok {
+			if SearchDebPackage(key) {
 				fmt.Print(pad.Left("- ", (i+1)*2, " "))
 				fmt.Print(key + "\n")
 				PrintDep(value, debFilter, i+1)
@@ -214,12 +235,27 @@ func SliceToDepMap(slice []string) DepMap {
 
 // GetDep is the on function to get graph or map of dependencies
 func GetDep(project string, returnType string) (DepMap, error) {
-
+	ProjectName = project
+	// Download all packages
+	err := GetAllPkg(project)
+	if err != nil {
+		var m DepMap
+		return m, err
+	}
+	// Standard libs slice
 	stdSlice, err := GetImports("", "std")
 	if err != nil {
 		var m DepMap
 		return m, err
 	}
+	// complete path of the project
+	ProjectPWD, err := GetProjectPath(project)
+	if err != nil {
+		var m DepMap
+		return m, err
+	}
+	// Check if project use vendor
+	VendorUsed = DirectoryExist(ProjectPWD + "/vendor/")
 	StdMap = SliceToMap(stdSlice)
 	GoBinaries, _ = GetGoDebBinaries()
 	DepGraph.deps = make(map[string]DepMap)
@@ -238,7 +274,8 @@ func GetDep(project string, returnType string) (DepMap, error) {
 // GetDepRecursive is to get the recursive map of dependencies
 func GetDepRecursive(project string, returnType string) (DepMap, error) {
 	// Handle path, if it don't exist, get it.
-	HandleProject(project)
+	// To get project as they come
+	// GetPkg(project)
 	// Convert slice to map, since it's fast in searching.
 	importSlice, err := GetImports(project, "imports")
 	if err != nil {
@@ -254,6 +291,9 @@ func GetDepRecursive(project string, returnType string) (DepMap, error) {
 	importDepMap := SliceToDepMap(importSlice)
 
 	for key := range importDepMap.deps {
+		if VendorUsed {
+			key = strings.Replace(key, ProjectName+"/vendor/", "", -1)
+		}
 		switch returnType {
 		case "tree":
 			importDepMap.deps[key], _ = GetDepRecursive(key, returnType)
