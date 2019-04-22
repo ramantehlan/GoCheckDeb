@@ -122,7 +122,7 @@ func GetPkg(project string) error {
 		if err != nil {
 			return err
 		}
-		cmd := exec.Command("go", "get", project)
+		cmd := exec.Command("go", "get", "-d", "-t", project)
 		_, err := cmd.CombinedOutput()
 		if err != nil {
 			return errors.New("Error in 'go get " + project + "'")
@@ -275,7 +275,7 @@ func GetDep(project string, returnType string) (DepMap, error) {
 func GetDepRecursive(project string, returnType string) (DepMap, error) {
 	// Handle path, if it don't exist, get it.
 	// To get project as they come
-	// GetPkg(project)
+	//GetPkg(project)
 	// Convert slice to map, since it's fast in searching.
 	importSlice, err := GetImports(project, "imports")
 	if err != nil {
