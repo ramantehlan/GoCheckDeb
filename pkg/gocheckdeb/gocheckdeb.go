@@ -206,12 +206,13 @@ func PrintDep(m DepMap, debFilter bool, displayAll bool, i int) {
 			} else {
 				fmt.Print(pad.Left("- ", (i+1)*2, " "))
 				fmt.Print(key)
-				if !displayAll && i == 0 {
-					fmt.Print(aurora.Bold(aurora.Yellow(" [No Deb Package]")))
+				if !displayAll {
+					if i == 0 {
+						fmt.Print(aurora.Bold(aurora.Yellow(" (No Deb Package)")))
+					}
 				} else {
-					fmt.Print(aurora.Bold(aurora.Yellow(" [No Deb Package]")))
+					fmt.Print(aurora.Bold(aurora.Yellow(" (No Deb Package)")))
 				}
-
 				fmt.Println("")
 			}
 		} else {
@@ -261,7 +262,11 @@ func GetDep(project string, returnType string) (DepMap, error) {
 	// Check if project use vendor
 	VendorUsed = DirectoryExist(ProjectPWD + "/vendor/")
 	StdMap = SliceToMap(stdSlice)
-	GoBinaries, _ = GetGoDebBinaries()
+	GoBinaries, err = GetGoDebBinaries()
+	if err != nil {
+		var m DepMap
+		return m, err
+	}
 	DepGraph.deps = make(map[string]DepMap)
 
 	// By default it will give out map or list
