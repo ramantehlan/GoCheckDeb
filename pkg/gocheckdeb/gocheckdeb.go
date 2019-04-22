@@ -239,7 +239,7 @@ func SliceToDepMap(slice []string) DepMap {
 }
 
 // GetDep is the on function to get graph or map of dependencies
-func GetDep(project string, returnType string) (DepMap, error) {
+func GetDep(project string, getType string, returnType string) (DepMap, error) {
 	ProjectName = project
 	// Download all packages
 	err := GetAllPkg(project)
@@ -270,7 +270,7 @@ func GetDep(project string, returnType string) (DepMap, error) {
 	DepGraph.deps = make(map[string]DepMap)
 
 	// By default it will give out map or list
-	m, err := GetDepRecursive(project, returnType)
+	m, err := GetDepRecursive(project, getType, returnType)
 
 	switch returnType {
 	case "graph":
@@ -281,12 +281,12 @@ func GetDep(project string, returnType string) (DepMap, error) {
 }
 
 // GetDepRecursive is to get the recursive map of dependencies
-func GetDepRecursive(project string, returnType string) (DepMap, error) {
+func GetDepRecursive(project string, getType string, returnType string) (DepMap, error) {
 	// Handle path, if it don't exist, get it.
 	// To get project as they come
 	//GetPkg(project)
 	// Convert slice to map, since it's fast in searching.
-	importSlice, err := GetImports(project, "imports")
+	importSlice, err := GetImports(project, getType)
 	if err != nil {
 		var m DepMap
 		return m, err
@@ -305,13 +305,13 @@ func GetDepRecursive(project string, returnType string) (DepMap, error) {
 		}
 		switch returnType {
 		case "tree":
-			importDepMap.deps[key], _ = GetDepRecursive(key, returnType)
+			importDepMap.deps[key], _ = GetDepRecursive(key, getType, returnType)
 		case "graph":
-			DepGraph.deps[key], _ = GetDepRecursive(key, returnType)
+			DepGraph.deps[key], _ = GetDepRecursive(key, getType, returnType)
 		case "list":
 			return importDepMap, nil
 		default:
-			importDepMap.deps[key], _ = GetDepRecursive(key, returnType)
+			importDepMap.deps[key], _ = GetDepRecursive(key, getType, returnType)
 		}
 	}
 
