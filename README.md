@@ -54,11 +54,11 @@ To run it on a project, provide the name of the package.
 
 `$ ./GoCheckDeb -project=abc.xyz/pkg/package-name`
 
-3. **Output Type***
+3. **Output Type**
 
 To swithc between **Graph**, **Map** or **List**.
 
-`$ ./GoCheckDeb -project=abc.xyz/pkg/package-name -return=graph`
+`$ ./GoCheckDeb -return=graph`
 
 
 #### Package
@@ -103,6 +103,9 @@ To contribute to this project, or build it for other platforms use the following
 ├── main.go
 ├── README.md
 ├── .gitignore
+├── assets
+│   └── img
+│       └── ss.png
 └── pkg
     └── gocheckdeb
         └── gocheckdeb.go
@@ -131,7 +134,7 @@ It can't get better then this, your pull request will be really appreciated by t
 
 ## Gallery
 
-`To be Updated`
+![Screen Capture](https://raw.githubusercontent.com/ramantehlan/GoCheckDeb/master/assets/img/ss.png)
 
 ## License
 
