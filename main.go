@@ -1,9 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb"
@@ -17,13 +17,12 @@ func main() {
 	debFilter := true
 	displayAll := true
 
-	/*debFilterFlag := flag.Bool("debFilter", true, "(Bool) Filter out Debian package or not")
-	displayAllFlag := flag.Bool("displayAll", true, "(Bool) Display all missing debian package or just header")
-	*/
+	projectFlag := flag.String("project", "github.com/zaquestion/lab", "(String) Return type can be Graph, Tree and List")
+	returnFlag := flag.String("return", "graph", "(String) Return type can be Graph, Tree and List")
 
-	if len(os.Args) >= 2 {
-		project = os.Args[1]
-	}
+	flag.Parse()
+	project = *projectFlag
+	returnType = *returnFlag
 
 	fmt.Printf("\nGolang package: %s\n", aurora.Bold(project))
 	fmt.Printf("Output type: %s\n", aurora.Bold(returnType))

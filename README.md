@@ -29,6 +29,8 @@ dependencies and sub-dependencies and filter out the ones which are not packaged
 yet. You can also use this tool in your project, you just have to import the
 **gocheckdeb** library.
 
+Using this tool you can print Graph, Tree or a List of dependencies, plus you have some other minor features to make it better.
+
 ## Usage
 
 You can either use it as a tool or as a package for your own project. Instructions to download and use it are given below.
@@ -40,7 +42,23 @@ You can either use it as a tool or as a package for your own project. Instructio
 
 Once you have downloaded the tool, you can use following commands to use it.
 
-`$ ./GoCheckDeb PACKAGE-NAME`
+1. **Default command**
+
+If you don't provide any flags, this tool will take in default values.
+
+`$ ./GoCheckDeb`
+
+2. **Package**
+
+To run it on a project, provide the name of the package.
+
+`$ ./GoCheckDeb -project=abc.xyz/pkg/package-name`
+
+3. **Output Type***
+
+To swithc between **Graph**, **Map** or **List**.
+
+`$ ./GoCheckDeb -project=abc.xyz/pkg/package-name -return=graph`
 
 
 #### Package
