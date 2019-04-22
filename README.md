@@ -40,6 +40,9 @@ You can either use it as a tool or as a package for your own project. Instructio
 
 Once you have downloaded the tool, you can use following commands to use it.
 
+`$ ./GoCheckDeb PACKAGE-NAME`
+
+
 #### Package
 
 1. Download the package. `$ go get github.com/ramantehlan/GoCheckDeb/pkg/gocheckdeb`
@@ -51,8 +54,6 @@ Once you have imported the package, you can use following document to use it.
 
 // Global Variables inclure
 GoDebBinaryStruct
-
-
  ```
 
 ## Development
