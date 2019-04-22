@@ -196,26 +196,30 @@ func MapToSlice(m LevelMap) []string {
 }
 
 // PrintDep is to print the DepMap
-func PrintDep(m DepMap, debFilter bool, i int) {
+func PrintDep(m DepMap, debFilter bool, displayAll bool, i int) {
 	for key, value := range m.deps {
 		if debFilter {
 			if SearchDebPackage(key) {
 				fmt.Print(pad.Left("- ", (i+1)*2, " "))
 				fmt.Print(key + "\n")
-				PrintDep(value, debFilter, i+1)
 
 			} else {
 				fmt.Print(pad.Left("- ", (i+1)*2, " "))
 				fmt.Print(key)
-				fmt.Print(aurora.Bold(aurora.Yellow(" [No Deb Package] \n")))
-				PrintDep(value, debFilter, i+1)
+				if !displayAll && i == 0 {
+					fmt.Print(aurora.Bold(aurora.Yellow(" [No Deb Package]")))
+				} else {
+					fmt.Print(aurora.Bold(aurora.Yellow(" [No Deb Package]")))
+				}
+
+				fmt.Println("")
 			}
 		} else {
 			fmt.Print(pad.Left("- ", (i+1)*2, " "))
-			fmt.Print(aurora.Bold(aurora.Blue(key + "\n")))
-			PrintDep(value, debFilter, i+1)
+			fmt.Print(key + "\n")
 		}
 
+		PrintDep(value, debFilter, displayAll, i+1)
 	}
 	i++
 }
