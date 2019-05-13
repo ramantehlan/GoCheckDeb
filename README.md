@@ -43,6 +43,15 @@ In order to run this tool, you need to have Golang installted on your system, an
 - [Setup GOPATH](https://github.com/golang/go/wiki/SettingGOPATH)
 - [How to work in Go](https://golang.org/doc/code.html)
 
+To make a workspace:
+- Create a folder `goWorkspace` in your home folder.
+- Give this folder two sub-folders `bin`,`src`.
+- Edit your `.bash_profile` to add the following line:
+
+```
+export GOPATH=$HOME/goWorkspace
+```
+
 
 #### Tool
 
