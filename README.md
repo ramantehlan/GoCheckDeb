@@ -35,6 +35,15 @@ Using this tool you can print Graph, Tree or a List of dependencies, plus you ha
 
 You can either use it as a tool or as a package for your own project. Instructions to download and use it are given below.
 
+#### Run Environment
+
+In order to run this tool, you need to have Golang installted on your system, and $GOPATH must be set.
+
+- [Install Go.](https://golang.org/doc/install)
+- [Setup GOPATH](https://github.com/golang/go/wiki/SettingGOPATH)
+- [How to work in Go](https://golang.org/doc/code.html)
+
+
 #### Tool
 
 1. Download the Binary from [here](https://github.com/ramantehlan/GoCheckDeb/raw/master/GoCheckDeb)
