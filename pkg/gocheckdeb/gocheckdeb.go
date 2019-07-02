@@ -156,7 +156,7 @@ func GetImports(project, importType string) ([]string, error) {
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, errors.New("Error in getting 'go list" + importType + "'")
+		return nil, errors.New("Error in getting 'go list " + importType + "'")
 	}
 
 	// Prepare the slice for Output
